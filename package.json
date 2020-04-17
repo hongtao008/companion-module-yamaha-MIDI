@@ -1,0 +1,24 @@
+{
+  "name": "yamaha-MIDI",
+  "version": "1.0.0",
+  "api_version": "1.0.0",
+  "description": "MIDI Control module for Yamaha Pro Audio equipment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["Audio", "MIDI", "Mixer"],
+  "manufacturer": "Yamaha",
+  "product": ["CL/QL (MIDI)"],
+  "shortname": "yamaha-MIDI",
+  "homepage": "https://github.com/bitfocus/companion-module-yamaha-MIDI#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitfocus/companion-module-yamaha-MIDI.git"
+  },
+  "author": "Andrew Broughton <andy@checkcheckonetwo.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bitfocus/companion-module-yamaha-MIDI/issues"
+  }
+}
