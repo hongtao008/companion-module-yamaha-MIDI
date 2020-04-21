@@ -1,4 +1,4 @@
-## Yamaha Sysex MIDI - v1.0.1
+## Yamaha Sysex MIDI - v1.1.0
 
 Please visit http://www.checkcheckonetwo.com for help, discussions, suggestions, etc.
 

@@ -317,9 +317,9 @@ newParamMsg = (newCmd, newCmdStr, newCh, newVal) => {
 	let newParam = undefined;
 	let newParamVals = {cmdKey: newCmd, cmdStr: newCmdStr, ch: newCh, val: newVal}
 
-	if (newCmd !== null && newCmd.length == 10) { 					// Parameter Message
+	if (newCmd !== null && newCmd !== undefined && newCmd.length == 10) { 					// Parameter Message
 		newParam = new yamParamMsg(undefined, newParamVals);
-	} else if (newCmd !== null && newCmd.length == 16) { 			// Lib Message
+	} else if (newCmd !== null && newCmd !== undefined && newCmd.length == 16) { 			// Lib Message
 		newParam = new yamLibMsg(undefined, newParamVals);
 	}
 

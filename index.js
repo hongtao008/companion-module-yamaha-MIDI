@@ -6,10 +6,10 @@ var tcp            = require('../../tcp');
 var net            = require('net');
 var instance_skel  = require('../../instance_skel');
 
-const yamaha       = require('./yamaha.js');
 const actions      = require('./actions.js');
+const feedback     = require('./feedback.js');
 const presets      = require('./presets.js');
-const fbHandler    = require('./feedback.js');
+const yamaha       = require('./yamaha.js');
 
 
 // Instance Setup
@@ -20,12 +20,18 @@ class instance extends instance_skel {
 
 		this.CL_HEARTBEAT   = [0xF0, 0x43, 0x10, 0x3E, 0x19, 0x7F, 0xF7];
 
-		this.MIDIPresets    = [];
 		this.heartBeatTimer = {};
 		this.macroRec       = false;
 		this.macroCount     = 0;
 		this.macroPgBk      = {};
 		this.dataStore      = {};
+
+		Object.assign(this, {
+			...actions,
+			...feedback,
+			...presets,
+			...yamaha
+		});
 
 	}
 
@@ -124,8 +130,8 @@ class instance extends instance_skel {
 		
 		this.log('info', `Device model= ${this.config.model}`);
 		
-		actions.createActions(this); // Re-do the actions once the console is chosen
-		presets.createPresets(this);
+		this.createActions(); // Re-do the actions once the console is chosen
+		this.createPresets();
 		this.init_tcp();
 	}
 
@@ -222,7 +228,7 @@ class instance extends instance_skel {
 							console.log(`Unknown: ${fmtHex(line)} length = ${line.length}`);			
 					}
 					if (this.msg !== undefined && !this.msg.hide) {
-						if (this.macroRec) presets.addToMacro(this, this.msg);
+						if (this.macroRec) this.addToMacro(this.msg);
 						this.addToDataStore(this.msg);
 						this.checkFeedbacks(this.msg.cmdKey);
 					}	
@@ -263,15 +269,15 @@ class instance extends instance_skel {
 	}
 
 	action(action) {
-		actions.doAction(this, action);
+		this.doAction(action);
 	}
 
 	feedback(feedback, bank) {
-		return handleFeedback(this, feedback, bank);
+		return this.handleFeedback(feedback, bank);
 	}
 
 	pollConsole() {
-		pollMIDI(this);
+		this.pollMIDI();
 	}
 
 	addToDataStore(msg) {

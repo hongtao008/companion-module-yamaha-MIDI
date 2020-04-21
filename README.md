@@ -23,6 +23,11 @@ Please visit http://www.checkcheckonetwo.com for help, discussions, suggestions,
 
 **REVISION HISTORY**
 
+v1.1.0  Updates
+
+        Rewrite - major cleanup. (Not sure if I added bugs...)
+        Macros work without preset intermediary, records directly to button now!
+
 v1.0.1  Initial Commit
 
         Minor Bug Fixes
