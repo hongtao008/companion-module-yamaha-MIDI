@@ -5,11 +5,11 @@
 var tcp            = require('../../tcp');
 var net            = require('net');
 var instance_skel  = require('../../instance_skel');
+
 const yamaha       = require('./yamaha.js');
 const actions      = require('./actions.js');
 const presets      = require('./presets.js');
 const fbHandler    = require('./feedback.js');
-
 
 
 // Instance Setup
@@ -18,16 +18,13 @@ class instance extends instance_skel {
 	constructor(system, id, config) {
 		super(system, id, config);
 
-		Object.assign(this, {
-			...fbHandler
-		});
-
 		this.CL_HEARTBEAT   = [0xF0, 0x43, 0x10, 0x3E, 0x19, 0x7F, 0xF7];
 
 		this.MIDIPresets    = [];
 		this.heartBeatTimer = {};
 		this.macroRec       = false;
 		this.macroCount     = 0;
+		this.macroPgBk      = {};
 		this.dataStore      = {};
 
 	}
@@ -37,7 +34,6 @@ class instance extends instance_skel {
 	init() {
 		this.updateConfig(this.config);
 	}
-
 
 	// Module deletion
 	destroy() {
@@ -82,14 +78,43 @@ class instance extends instance_skel {
 				label: 		'Use Editor',
 				width: 		6,
 				default: 	false
-			}]
+			},
+			{
+				type: 		'textinput',
+				id: 		'logfolder',
+				label: 		'folder for log files (must be writable!)',
+				width: 		6,
+				default: 	`${require('os').homedir()}/`,
+				regex: 		''
+			}
+		]
 	}
 
 	
 	// Change in Configuration
 	updateConfig(config) {
-		
 		this.config = config;
+
+		const fs    = require('fs');
+		let folder  = this.config.logfolder || `${require('os').homedir()}/`;
+		folder = require('path').resolve(folder);
+		if (!folder.endsWith('/')) {
+			folder = folder + '/';
+		}
+
+
+		fs.access(folder, fs.constants.W_OK, (err) => {
+			if (err) {
+				this.log('error', `Unable to write to log folder '${folder}'`);
+			} else {
+				let fname = `${folder}newParamMsgs.json`;
+				
+				console.log(`newParamMsgs = '${fname}'`);
+				yamaha.setFName(fname);
+				this.log('info', `New Commands Logging to: '${fname}'`);
+			}		  
+		});
+
 		this.newConsole();
 	}
 
@@ -214,7 +239,7 @@ class instance extends instance_skel {
 				this.server.listen(50000);
 
 				this.server.on('listening', (isListening) => {
-						this.status(this.STATUS_WARNING, 'Listening...');
+						this.status(this.STATUS_WARNING, 'I\'m Listening...');
 						this.log('info', `Server Listening...`);
 				});
 				
@@ -267,9 +292,8 @@ class instance extends instance_skel {
 	}
 }
 
-	fmtHex = (buf) => {
-		return buf.toString('hex').replace(/(.{2})/g, '$1 ');
-	}
-
+fmtHex = (buf) => {
+	return buf.toString('hex').replace(/(.{2})/g, '$1 ');
+}
 
 module.exports = instance;

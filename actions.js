@@ -136,7 +136,7 @@ const createAction = (msg) => {
                 id:      'yamMIDIval',
                 tooltip: 'Choose a Value',
                 min:      msg.MinVal,
-                max:      msg.MaxVal,
+                max:      (msg.MaxVal !== 0) ? msg.MaxVal : 0xFFFFFFFF,
                 default:  msg.DefVal,
                 required: true
             });
@@ -185,7 +185,7 @@ inst.log('info','***** END OF COMMAND LIST *****')
 
     commands['otherYamParamMsg'] = {
         label:   'Other Yamaha MIDI Message',
-        tooltip: 'Other Message, not listed',
+        tooltip: 'Additional Message',
         options: [{
             type:    'dropdown',
             label:   'Message Name',
@@ -200,6 +200,8 @@ inst.log('info','***** END OF COMMAND LIST *****')
             label:   'Channel',
             id:      'yamMIDIch',
             tooltip: 'Choose a Channel',
+            min:      0,
+            max:      0xFFFFFFFF,
             default:  0,
             required: true
         },
@@ -208,12 +210,54 @@ inst.log('info','***** END OF COMMAND LIST *****')
             label:   'Value',
             id:      'yamMIDIval',
             tooltip: 'Choose a Value',
+            min:      0,
+            max:      0xFFFFFFFF,
             default:  0,
             required: true
         }]
     }
 
-
+    // Add a command type for any new unidentified commands that need naming.
+    commands['newYamParamMsg'] = {
+        label:   'NEW Yamaha MIDI Message',
+        tooltip: 'Other Message, not listed',
+        options: [{
+            type:    'textinput',
+            label:   'Command',
+            id:      'yamMIDIcmdStr',
+            tooltip: 'Enter a name for this new command',
+            default: 'New Command'
+        },
+        {
+            type:    'textinput',
+            label:   'Message Hex',
+            id:      'yamMIDIcmd',
+            tooltip: 'The Hex code',
+            default: '0000000000',
+            regex:   '/[0-9A-Fa-f]/g'
+        },
+        {
+            type:    'number',
+            label:   'Channel',
+            id:      'yamMIDIch',
+            tooltip: 'Choose a Channel',
+            min:      0,
+            max:      0xFFFFFFFF,
+            default:  0,
+            required: true
+        },
+        {
+            type:    'number',
+            label:   'Value',
+            id:      'yamMIDIval',
+            tooltip: 'Choose a Value',
+            min:      0,
+            max:      0xFFFFFFFF,
+            default:  0,
+            required: true
+        }]
+    }
+    
     commands['macroRecStart']  = {label: 'Record MIDI Macro'};
     commands['macroRecStop']   = {label: 'Stop Recording'};
 
@@ -222,11 +266,7 @@ inst.log('info','***** END OF COMMAND LIST *****')
         {type: 'colorpicker', label: 'Color',      id: 'fg', default: inst.rgb(0, 0, 0)},
         {type: 'colorpicker', label: 'Background', id: 'bg', default: inst.rgb(255, 0, 0)}
     ]};
-/*
-inst.log('info','******** COMMAND LIST *********');
-Object.entries(commands).forEach(([key, value]) => inst.log('info',`<font face="courier">${value.label.padEnd(36, '\u00A0')} ${key}</font>`));
-inst.log('info','***** END OF COMMAND LIST *****')
- */ 
+ 
     inst.setActions(commands);
     inst.setFeedbackDefinitions(feedbacks);
 }
@@ -241,6 +281,8 @@ doAction = (inst, action) => {
 
         if (action.action == 'otherYamParamMsg') {
             cmd = yamaha.newParamMsg(action.options.yamMIDIcmd, action.action, action.options.yamMIDIch, action.options.yamMIDIval);
+        } else if (action.action == 'newYamParamMsg') {
+            cmd = yamaha.newParamMsg(action.options.yamMIDIcmd, action.options.yamMIDIcmdStr, action.options.yamMIDIch, action.options.yamMIDIval);
         } else {
             cmd = yamaha.newParamMsg(action.action, action.label, action.options.yamMIDIch, action.options.yamMIDIval);
         }
@@ -257,10 +299,8 @@ doAction = (inst, action) => {
             }
         } 
     } else {
-
-        presets.macroAction(inst, action.action);       
+        presets.macroAction(inst, action);       
     }
-
 }
 
 module.exports = {createActions, createAction, doAction};

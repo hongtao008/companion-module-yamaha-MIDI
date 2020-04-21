@@ -1,6 +1,8 @@
 var yamParamMsgs   = require('./yamParamMsgs.json');
 var otherParamMsgs = require('./otherParamMsgs.json');
 var newParamMsgs   = {};
+var fname          = undefined;
+var fs             = require('fs');
 
 const CL_HEADER = [0xF0, 0x43, 0x10, 0x3E, 0x19];
 const CL_TAIL   = 0xF7;
@@ -13,21 +15,29 @@ const getMsgs = (which) => {
 	}
 }
 
-writeNewParams = () => {
-	const fs = require('fs');
-			
-	let data = JSON.stringify(newParamMsgs, null, 2);
+const setFName = (fn) => {
+	fname = fn;
+	
+	if (fs.existsSync(fname)) {
+		newParamMsgs = require(fname);
+		fs.copyFile(fname, fname + '.bak', (err) => {
+			if (err) {
+				console.log(`Cant open file ${fname}!`);
+			}
+		});
+	} else {
+		console.log(`${fname} does not exist.`);
+	}
+}
 
-	let d = new Date(Date.now())
-	let datestr = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`
-	let folder = '../'
-	let fname = `${folder}newParamMsgs_${datestr}.json`
-/*
-	fs.writeFile(fname, data, err => {
-		if (err) throw err;
-		console.log(`\nNew messages written to file ${fname}!\n`);
-	});
-*/
+const writeNewParams = () => {
+	if (fname !== undefined) {
+		data = JSON.stringify(newParamMsgs, null, 2);
+		fs.writeFile(fname, data, err => {
+			if (err) throw err;
+			console.log(`\nNew messages written to file ${fname}!\n`);
+		});
+	}
 }				
 
 
@@ -35,33 +45,43 @@ class yamMsg {
 
 	constructor(cmdKey, newCmdStr) {
 		this._cmd = this.findCmd(cmdKey, newCmdStr);
+		if (this.msgType == 'new') {
+			writeNewParams();
+		}
 	}
 
 	findCmd(aKey, aCmdStr) {
-		this.mainMsg = false;
 		let foundCmd = yamParamMsgs[aKey];
+		this.msgType = 'new';
 		
 		if (foundCmd !== undefined) {
-			this.mainMsg = true;
+			this.msgType = 'main';
 			return foundCmd;
+		
 		} else if ((foundCmd = otherParamMsgs[aKey]) !== undefined) {
+			this.msgType = 'other';
 			return foundCmd
-		} else if ((foundCmd = newParamMsgs[aKey]) !== undefined) {
-			return foundCmd
+		
 		} else {
-			newParamMsgs[aKey] = {
-				"CommandStr": aCmdStr,
-				"MaxCh":      0,
-				"MinVal":     0,
-				"MaxVal":     0,
-				"DefVal":     0,
-				"Command":    aKey,
-				"ChType":     "",
-				"ValType":    "",
-				"Hide":       false
+			if ((foundCmd = newParamMsgs[aKey]) !== undefined) {
+				if (foundCmd.Command !== aCmdStr) {
+					foundCmd.CommandStr = aCmdStr;
+				}
+				return foundCmd;		
+			} else {
+				newParamMsgs[aKey] = {
+					"CommandStr": aCmdStr,
+					"MaxCh":      0,
+					"MinVal":     0,
+					"MaxVal":     0,
+					"DefVal":     0,
+					"Command":    aKey,
+					"ChType":     "",
+					"ValType":    "",
+					"Hide":       false
+				}
+				return newParamMsgs[aKey];
 			}
-			writeNewParams();
-			return newParamMsgs[aKey];
 		}
 	}
 
@@ -171,8 +191,9 @@ class yamParamMsg extends yamMsg {
 			this.ch     = newMsgParams.ch
 			this.val    = newMsgParams.val
 		} else {
+
 			let newCmdKey = msg.toString('hex', 5, 10).toUpperCase();
-			let newCmdStr = `Unknown: ${msg.toString('hex', 5, 10).toUpperCase()}`;
+			let newCmdStr = newCmdKey;
 			if (newMsgParams !== undefined) {
 				newCmdKey = newMsgParams.cmdKey;
 				newCmdStr = newMsgParams.cmdStr;
@@ -188,6 +209,7 @@ class yamParamMsg extends yamMsg {
 		if (this.val > this.maxVal) {
 			this.maxVal = this.val;
 		}
+
 	}
 
 
@@ -239,11 +261,10 @@ class yamParamMsg extends yamMsg {
 
 	get val() {
 		let tempVal = this.get7Bit(12, 5);
-		switch(this.valType) {
-			case 'bool':
-				return (tempVal == 1); // True or False
-			default:
-				return tempVal;
+		if (this.msgType == 'main' && this.valType == 'bool') {
+			return (tempVal == 1); // True or False
+		} else {
+			return tempVal;
 		}
 	}
 	set val(value) {
@@ -296,9 +317,9 @@ newParamMsg = (newCmd, newCmdStr, newCh, newVal) => {
 	let newParam = undefined;
 	let newParamVals = {cmdKey: newCmd, cmdStr: newCmdStr, ch: newCh, val: newVal}
 
-	if (newCmd.length == 10) { 					// Parameter Message
+	if (newCmd !== null && newCmd.length == 10) { 					// Parameter Message
 		newParam = new yamParamMsg(undefined, newParamVals);
-	} else if (newCmd.length == 16) { 			// Lib Message
+	} else if (newCmd !== null && newCmd.length == 16) { 			// Lib Message
 		newParam = new yamLibMsg(undefined, newParamVals);
 	}
 
@@ -332,4 +353,4 @@ todB = (intVal) => {
 	return `${dBVal.toFixed(2)}dB`;
 }
 
-module.exports = {getMsgs, yamMsg, yamParamMsg, yamLibMsg, todB, newParamMsg}
+module.exports = {setFName, getMsgs, yamMsg, yamParamMsg, yamLibMsg, todB, newParamMsg}

@@ -1,16 +1,20 @@
 // Handle the Feedbacks
 handleFeedback = (inst, feedback, bank) => {
     let options = feedback.options;
-    
+
+console.log(feedback);
+
     switch (feedback.type) {
         case 'macroRecStart':
-            if (options.on == inst.macroRec) {
+            if (options.on == inst.macroRec && inst.macroPgBk !== undefined && feedbacks[inst.macroPgBk.page][inst.macroPgBk.bank][0].id == feedback.id) {
                 return {color: options.fg, bgcolor: options.bg};
             }
+            return;
         case 'otherYamParamMsg':
+        case 'newYamParamMsg':
             cmdKeyToFind = options.yamMIDIcmd;
             break;
-       default:
+        default:
             cmdKeyToFind = feedback.type;
     }
 

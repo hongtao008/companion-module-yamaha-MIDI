@@ -23,7 +23,8 @@ Please visit http://www.checkcheckonetwo.com for help, discussions, suggestions,
 
 **REVISION HISTORY**
 
-v1.0.0  Initial Commit
+v1.0.1  Initial Commit
 
-        To Do:          Testing
+        Minor Bug Fixes
+        Ability to log undocumented messages
         
