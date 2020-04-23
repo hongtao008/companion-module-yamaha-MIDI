@@ -17,17 +17,7 @@ const getMsgs = (which) => {
 
 const setFName = (fn) => {
 	fname = fn;
-	
-	if (fs.existsSync(fname)) {
-		newParamMsgs = require(fname);
-		fs.copyFile(fname, fname + '.bak', (err) => {
-			if (err) {
-				console.log(`Cant open file ${fname}!`);
-			}
-		});
-	} else {
-		console.log(`${fname} does not exist.`);
-	}
+	newParamMsgs = require(fname);
 }
 
 const writeNewParams = () => {
@@ -35,7 +25,7 @@ const writeNewParams = () => {
 		data = JSON.stringify(newParamMsgs, null, 2);
 		fs.writeFile(fname, data, err => {
 			if (err) throw err;
-			console.log(`\nNew messages written to file ${fname}!\n`);
+			console.log(`\nNew messages written to ${fname}!\n`);
 		});
 	}
 }				

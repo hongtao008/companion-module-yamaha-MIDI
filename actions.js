@@ -157,14 +157,14 @@ module.exports = {
         let othMsgs   = yamaha.getMsgs('other');
         let othCmds   = [];
 
-//    this.log('info','******** COMMAND LIST *********');
+//this.log('info','******** COMMAND LIST *********');
 
         for(const msg in yamMsgs) {
             let thisMsg = yamMsgs[msg];
             if (!thisMsg.hide) {
                 commands[msg] = this.createAction(thisMsg);
     
-//    this.log('info',`<font face="courier">${thisMsg.CommandStr}</font>`);
+//this.log('info',`<font face="courier">${thisMsg.CommandStr}</font>`);
 
                 feedbacks[msg] = JSON.parse(JSON.stringify(commands[msg])); // Clone the Actions to a matching feedback
                 feedbacks[msg].options.push(
@@ -174,7 +174,7 @@ module.exports = {
             }
         }
 
-//    this.log('info','***** END OF COMMAND LIST *****')
+//this.log('info','***** END OF COMMAND LIST *****')
     
         for (const msg in othMsgs) {
             let thisMsg = othMsgs[msg];
@@ -258,14 +258,10 @@ module.exports = {
             }]
         }
         
-        commands['macroRecStart']  = {label: 'RECORD MIDI Macro'};
-        commands['macroRecStop']   = {label: 'STOP Recording Macro'};
+        commands['macroRec']      = {label: 'RECORD MIDI Macro'};
+        commands['macroRecLatch'] = {label: 'RECORD MIDI Macro (unlatch)'}
 
-        feedbacks['macroRecStart'] = {label: 'Is Macro Recording?', options: [
-            {type: 'checkbox',    label: 'YES',        id: 'on', default: true},
-            {type: 'colorpicker', label: 'Color',      id: 'fg', default: this.rgb(0, 0, 0)},
-            {type: 'colorpicker', label: 'Background', id: 'bg', default: this.rgb(255, 0, 0)}
-        ]};
+        feedbacks['macroRec']     = {label: 'Is Macro Recording?'}
     
         this.setActions(commands);
         this.setFeedbackDefinitions(feedbacks);
@@ -289,7 +285,6 @@ module.exports = {
             if (cmd !== undefined) {
 
                 this.logMsg(cmd, 'Send');
-                console.log(`sending: ${fmtHex(cmd.msg)}`)
                 
                 if (this.socket !== undefined && (this.socket.connected || this.socket.writable)) {
                     this.socket.write(cmd.msg); 					// send it

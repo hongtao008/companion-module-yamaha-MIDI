@@ -1,6 +1,6 @@
 // Control module for Yamaha Pro Audio, using MIDI communication
 // Andrew Broughton <andy@checkcheckonetwo.com>
-// Mar 29, 2020 Version 1.0.0
+// Apr 22, 2020 Version 1.1.1
 
 var tcp            = require('../../tcp');
 var net            = require('net');
@@ -21,7 +21,7 @@ class instance extends instance_skel {
 		this.CL_HEARTBEAT   = [0xF0, 0x43, 0x10, 0x3E, 0x19, 0x7F, 0xF7];
 
 		this.heartBeatTimer = {};
-		this.macroRec       = false;
+		this.macroMode      = 'stopped';
 		this.macroCount     = 0;
 		this.macroPgBk      = {};
 		this.dataStore      = {};
@@ -116,7 +116,20 @@ class instance extends instance_skel {
 				let fname = `${folder}newParamMsgs.json`;
 				
 				console.log(`newParamMsgs = '${fname}'`);
-				yamaha.setFName(fname);
+				
+				if (fs.existsSync(fname)) {
+					yamaha.setFName(fname);
+					this.log('info', `Previous newParamMsgs loaded from '${fname}'`);
+					fs.copyFile(fname, fname + '.bak', (err) => {
+						if (err) {
+							this.log('error', `Cant copy file '${fname}'!`);
+						}
+						this.log('info', `newParamMsgs backed up to ${fname}.bak`);
+					});
+				} else {
+					this.log('info',`Previous newParamMsgs '${fname}' does not exist.`);
+				}
+		
 				this.log('info', `New Commands Logging to: '${fname}'`);
 			}		  
 		});
@@ -228,7 +241,7 @@ class instance extends instance_skel {
 							console.log(`Unknown: ${fmtHex(line)} length = ${line.length}`);			
 					}
 					if (this.msg !== undefined && !this.msg.hide) {
-						if (this.macroRec) this.addToMacro(this.msg);
+						if (this.macroMode !== 'stopped') this.addToMacro(this.msg);
 						this.addToDataStore(this.msg);
 						this.checkFeedbacks(this.msg.cmdKey);
 					}	
@@ -290,10 +303,10 @@ class instance extends instance_skel {
 	logMsg(msg, prefix) {
 		if (msg.msg.length == 18) {
 			this.log('debug',`<font face="courier">${prefix}: ${msg.cmdStr.padEnd(30, '\u00A0')} Ch:${msg.ch.toString().padStart(2,'0')} Val:${msg.val}</font>`);
-			console.log(`${fmtHex(msg.msg)}		'${msg.cmdStr}' 	ch:${msg.ch}/${msg.maxCh} 	val:[${msg.minVal}]-> ${msg.val} <-[${msg.maxVal}]  ${msg.hide ? '(hidden)' : ''}`);
+			console.log(`${prefix}: ${fmtHex(msg.msg)}		'${msg.cmdStr}' 	ch:${msg.ch}/${msg.maxCh} 	val:[${msg.minVal}]-> ${msg.val} <-[${msg.maxVal}]  ${msg.hide ? '(hidden)' : ''}`);
 		} else {
 			this.log('debug',`<font face="courier">${prefix}: ${msg.cmdStr.padEnd(30, '\u00A0')} Ch:${msg.ch.toString().padStart(2,'0')} Scene:${msg.val}</font>`);
-			console.log(`${fmtHex(msg.msg)}		'${msg.cmdStr}'  scene:${msg.val} ch:${msg.ch}`);
+			console.log(`${prefix}: ${fmtHex(msg.msg)}		'${msg.cmdStr}'  scene:${msg.val} ch:${msg.ch}`);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-## Yamaha Sysex MIDI - v1.1.0
+## Yamaha Sysex MIDI - v1.1.1
 
 Please visit http://www.checkcheckonetwo.com for help, discussions, suggestions, etc.
 
@@ -12,7 +12,7 @@ Using with CL/QL Mixing console:
 
     1. Select the Console's IP address in the Edit/Config Page
     2. De-select "Use Editor"
-    3. Select a writable folder if you're planning too help figure out undocumented commands! :-)
+    3. Select a writable folder if you're planning to help figure out undocumented commands! :-)
 
 Using with CL/QL Editor:
 

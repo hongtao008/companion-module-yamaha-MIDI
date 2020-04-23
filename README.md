@@ -23,6 +23,11 @@ Please visit http://www.checkcheckonetwo.com for help, discussions, suggestions,
 
 **REVISION HISTORY**
 
+v1.1.1  Macro Improvements
+
+        Auto-Feedback creation for macros
+        Press-and-hold Record Macro Button to create latching button
+
 v1.1.0  Updates
 
         Rewrite - major cleanup. (Not sure if I added bugs...)
